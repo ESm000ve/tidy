@@ -1,0 +1,9 @@
+/* SF Pro Variable — Apple's system UI font for macOS/iOS. Falls back to
+   the platform-native system font if SF Pro is not available. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap");
+
+:root {
+  --font-sf: "SF Pro Variable", "SF Pro Display", "SF Pro Text",
+    -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui,
+    sans-serif;
+}
