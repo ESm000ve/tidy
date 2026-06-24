@@ -1,9 +1,10 @@
 import * as React from "react";
+import { SFIcon } from '@bradleyhodges/sfsymbols-react';
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MoreHorizontalIcon,
-} from "lucide-react";
+  sfChevronLeft,
+  sfChevronRight,
+  sfEllipsis,
+} from "@bradleyhodges/sfsymbols";
 
 import { cn } from "./utils";
 import { Button, buttonVariants } from "./button";
@@ -76,7 +77,7 @@ function PaginationPrevious({
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
       {...props}
     >
-      <ChevronLeftIcon />
+      <SFIcon icon={sfChevronLeft} />
       <span className="hidden sm:block">Previous</span>
     </PaginationLink>
   );
@@ -94,7 +95,7 @@ function PaginationNext({
       {...props}
     >
       <span className="hidden sm:block">Next</span>
-      <ChevronRightIcon />
+      <SFIcon icon={sfChevronRight} />
     </PaginationLink>
   );
 }
@@ -110,7 +111,7 @@ function PaginationEllipsis({
       className={cn("flex size-9 items-center justify-center", className)}
       {...props}
     >
-      <MoreHorizontalIcon className="size-4" />
+      <SFIcon icon={sfEllipsis} className="size-4" />
       <span className="sr-only">More pages</span>
     </span>
   );

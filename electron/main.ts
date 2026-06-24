@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, Menu, systemPreferences, nativeTheme } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { promises as fsp } from 'fs';
@@ -35,7 +35,15 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     titleBarStyle: 'hiddenInset',
-    backgroundColor: '#1E1E1E',
+    // Match the system appearance at launch so there is no dark/light flash
+    // before the React renderer paints. nativeTheme updates automatically when
+    // the user switches appearance while the app is running.
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#1E1E1E' : '#ECECEC',
+  });
+
+  // Keep backgroundColor in sync if the user switches appearance mid-session.
+  nativeTheme.on('updated', () => {
+    win?.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#1E1E1E' : '#ECECEC');
   });
 
   if (VITE_DEV_SERVER_URL) {
@@ -43,6 +51,13 @@ function createWindow() {
   } else {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }
+
+  win.on('enter-full-screen', () => {
+    win?.webContents.send('window:fullscreen-change', true);
+  });
+  win.on('leave-full-screen', () => {
+    win?.webContents.send('window:fullscreen-change', false);
+  });
 }
 
 // -- AI Smart Rename Cache --
@@ -61,7 +76,239 @@ app.whenReady().then(() => {
     console.warn("Failed to load smart rename cache", e);
   }
 
+  if (process.platform === 'darwin') {
+    app.setAboutPanelOptions({
+      applicationName: 'Tidy',
+      applicationVersion: app.getVersion(),
+      version: '1.0.0',
+      copyright: 'Copyright © 2026 Tidy Team',
+      credits: 'Built with HIG Excellence',
+    });
+  }
+
   createWindow();
+  setupMenu();
+});
+
+function setupMenu() {
+  const isMac = process.platform === 'darwin';
+
+  const template: any[] = [
+    // ── Tidy (App menu) ────────────────────────────────────────────────────────
+    // HIG: App menu contains only app-global items — About, Preferences, Services,
+    // Hide/Quit. Task-level actions (Run, Reset) live in the Actions menu instead.
+    ...(isMac ? [{
+      label: app.name,
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        {
+          label: 'Preferences…',   // ⌘, — required by macOS HIG
+          accelerator: 'CmdOrCtrl+,',
+          click: () => {
+            win?.webContents.send('menu:action', 'open-preferences');
+          }
+        },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    }] : []),
+    // ── File ───────────────────────────────────────────────────────────────────
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Select Source Folder…',
+          accelerator: 'CmdOrCtrl+O',
+          click: () => {
+            win?.webContents.send('menu:action', 'open-source');
+          }
+        },
+        {
+          // Cmd+Shift+O instead of Cmd+D — Cmd+D is "Don't Save" in macOS dialogs.
+          label: 'Select Destination Folder…',
+          accelerator: 'CmdOrCtrl+Shift+O',
+          click: () => {
+            win?.webContents.send('menu:action', 'open-destination');
+          }
+        },
+        { type: 'separator' },
+        isMac ? { role: 'close' } : { role: 'quit' }
+      ]
+    },
+    // ── Actions ────────────────────────────────────────────────────────────────
+    // Task-level actions moved here from the App menu (HIG violation fixed).
+    // Run Tidy: Cmd+Return — natural "execute" shortcut, no standard macOS conflict.
+    // Reset All Rules: no shortcut — it's a destructive action, intentional friction.
+    {
+      label: 'Actions',
+      submenu: [
+        {
+          label: 'Run Tidy',
+          accelerator: 'CmdOrCtrl+Return',
+          click: () => {
+            win?.webContents.send('menu:action', 'run-tidy');
+          }
+        },
+        {
+          label: 'Reset All Rules…',
+          click: () => {
+            win?.webContents.send('menu:action', 'reset-rules');
+          }
+        }
+      ]
+    },
+    // ── Edit ───────────────────────────────────────────────────────────────────
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'Undo Last Organize',
+          accelerator: 'CmdOrCtrl+Z',
+          click: () => {
+            win?.webContents.send('menu:action', 'undo-organize');
+          }
+        },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        ...(isMac ? [
+          { role: 'pasteAndMatchStyle' },
+          { role: 'delete' },
+          { role: 'selectAll' },
+          { type: 'separator' },
+          {
+            label: 'Speech',
+            submenu: [
+              { role: 'startSpeaking' },
+              { role: 'stopSpeaking' }
+            ]
+          }
+        ] : [
+          { role: 'delete' },
+          { type: 'separator' },
+          { role: 'selectAll' }
+        ])
+      ]
+    },
+    // ── View ───────────────────────────────────────────────────────────────────
+    {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Show Insights',
+          accelerator: 'CmdOrCtrl+I',
+          click: () => {
+            win?.webContents.send('menu:action', 'toggle-insights');
+          }
+        },
+        {
+          label: 'Show Audit Log',
+          accelerator: 'CmdOrCtrl+L',
+          click: () => {
+            win?.webContents.send('menu:action', 'toggle-audit');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Clear Search',
+          accelerator: 'CmdOrCtrl+K',
+          click: () => {
+            win?.webContents.send('menu:action', 'clear-search');
+          }
+        },
+        { type: 'separator' },
+        // Dev tools gated behind isPackaged — never shown in production builds.
+        ...(!app.isPackaged ? [
+          { role: 'reload' as const },
+          { role: 'forceReload' as const },
+          { role: 'toggleDevTools' as const },
+          { type: 'separator' as const },
+        ] : []),
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    // ── Window ─────────────────────────────────────────────────────────────────
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(isMac ? [
+          { type: 'separator' },
+          { role: 'front' },
+          { type: 'separator' },
+          { role: 'window' }
+        ] : [
+          { role: 'close' }
+        ])
+      ]
+    },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Learn More',
+          click: async () => {
+            await shell.openExternal('https://github.com/ericauzenne/file-organizer-app');
+          }
+        },
+        {
+          label: 'Documentation',
+          click: async () => {
+            await shell.openExternal('https://github.com/ericauzenne/file-organizer-app#readme');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Report an Issue',
+          click: async () => {
+            await shell.openExternal('https://github.com/ericauzenne/file-organizer-app/issues');
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+
+  // Set Dock Menu
+  if (isMac) {
+    const dockMenu = Menu.buildFromTemplate([
+      {
+        label: 'Run Tidy',
+        click: () => {
+          win?.webContents.send('menu:action', 'run-tidy');
+        }
+      },
+      {
+        label: 'Open Source Folder',
+        click: () => {
+          win?.webContents.send('menu:action', 'open-source');
+        }
+      }
+    ]);
+    app.dock.setMenu(dockMenu);
+  }
+}
+
+// System Preferences helper
+ipcMain.handle('system:getAccentColor', () => {
+  if (process.platform !== 'darwin') return null;
+  return systemPreferences.getAccentColor();
 });
 
 app.on('window-all-closed', () => {
@@ -261,18 +508,17 @@ ipcMain.handle('dialog:getFolderInsights', async (event, sourcePath: string) => 
   if (!sourcePath || !fs.existsSync(sourcePath)) return { counts: {}, total: 0 };
 
   try {
-    const files = await fsp.readdir(sourcePath);
+    const dir = await fsp.opendir(sourcePath);
     const counts: Record<string, number> = {
       screenshots: 0, photos: 0, recordings: 0,
       invoices: 0, contracts: 0, audioMissingMeta: 0, duplicates: 0
     };
+    let total = 0;
 
-    for (const filename of files) {
-      if (filename.startsWith('.')) continue;
-      const fullPath = path.join(sourcePath, filename);
-      const stats = await fsp.stat(fullPath);
-      if (!stats.isFile()) continue;
-
+    for await (const dirent of dir) {
+      if (!dirent.isFile() || dirent.name.startsWith('.')) continue;
+      
+      const filename = dirent.name;
       const ext = path.extname(filename).toLowerCase();
       const lowerName = filename.toLowerCase();
 
@@ -290,9 +536,11 @@ ipcMain.handle('dialog:getFolderInsights', async (event, sourcePath: string) => 
 
       // Quick heuristic for "duplicates"
       if (lowerName.match(/(_1|\(\d+\)|\scopy)\.\w+$/i)) counts.duplicates++;
+      
+      total++;
     }
 
-    return { counts, total: files.length };
+    return { counts, total };
   } catch (err) {
     console.error("Insights scan error:", err);
     return { counts: {}, total: 0 };
@@ -303,7 +551,6 @@ ipcMain.handle('dialog:getFolderPreview', async (event, sourcePath: string, cate
   if (!sourcePath || !fs.existsSync(sourcePath)) return [];
 
   try {
-    const files = await fsp.readdir(sourcePath);
     const previewFiles: any[] = [];
 
     // Extension map for categorization
@@ -311,19 +558,23 @@ ipcMain.handle('dialog:getFolderPreview', async (event, sourcePath: string, cate
     categories.forEach((cat: any) => {
       cat.extensions.forEach((ext: string) => {
         const cleanExt = (ext.startsWith('.') ? ext : `.${ext}`).toLowerCase();
-        extMap.set(cleanExt, cat.name);
+        extMap.set(cleanExt, cat);
       });
     });
 
     const fileHashes = new Map<string, string>(); // hash -> original filename
 
-    for (const filename of files) {
-      const fullPath = path.join(sourcePath, filename);
-      const stats = await fsp.stat(fullPath);
+    const dir = await fsp.opendir(sourcePath);
 
-      if (stats.isFile()) {
+    for await (const dirent of dir) {
+      if (dirent.isFile() && !dirent.name.startsWith('.')) {
+        const filename = dirent.name;
+        const fullPath = path.join(sourcePath, filename);
+        const stats = await fsp.stat(fullPath);
+
         const ext = path.extname(filename).toLowerCase();
-        const category = extMap.get(ext) || 'Other';
+        const categoryObj = extMap.get(ext);
+        const category = categoryObj ? categoryObj.name : 'Other';
 
         // Format size
         const sizeInBytes = stats.size;
@@ -332,25 +583,28 @@ ipcMain.handle('dialog:getFolderPreview', async (event, sourcePath: string, cate
         else if (sizeInBytes < 1024 * 1024) sizeStr = `${(sizeInBytes / 1024).toFixed(1)} KB`;
         else sizeStr = `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
 
-        // Check for duplicates via MD5 hashing
-        // To keep it fast for previews, we'll hash the first 1MB of the file
+        // Check for duplicates via MD5 hashing ONLY if duplicateDetection is enabled for this category
+        // To keep it fast, we'll hash the first 64KB of the file
         let isDuplicate = false;
         let duplicateOf = undefined;
-        try {
-          const fd = await fsp.open(fullPath, 'r');
-          const buffer = Buffer.alloc(Math.min(sizeInBytes, 1024 * 1024));
-          await fd.read(buffer, 0, buffer.length, 0);
-          await fd.close();
-          const fileHash = crypto.createHash('md5').update(buffer).digest('hex') + sizeInBytes.toString();
+        
+        if (categoryObj && categoryObj.duplicateDetection && sizeInBytes > 0) {
+          try {
+            const fd = await fsp.open(fullPath, 'r');
+            const buffer = Buffer.alloc(Math.min(sizeInBytes, 64 * 1024));
+            await fd.read(buffer, 0, buffer.length, 0);
+            await fd.close();
+            const fileHash = crypto.createHash('md5').update(buffer).digest('hex') + sizeInBytes.toString();
 
-          if (fileHashes.has(fileHash)) {
-            isDuplicate = true;
-            duplicateOf = fileHashes.get(fileHash);
-          } else {
-            fileHashes.set(fileHash, filename);
+            if (fileHashes.has(fileHash)) {
+              isDuplicate = true;
+              duplicateOf = fileHashes.get(fileHash);
+            } else {
+              fileHashes.set(fileHash, filename);
+            }
+          } catch (e) {
+            console.warn("Hashing failed for", filename, e);
           }
-        } catch (e) {
-          console.warn("Hashing failed for", filename, e);
         }
 
         previewFiles.push({
@@ -532,10 +786,10 @@ async function runOrganizationJob(config: any, onProgress?: (progress: number) =
           if (duplicateDetection) {
             try {
               const fd = await fsp.open(fullSourcePath, 'r');
-              const buffer = Buffer.alloc(Math.min(stats.size, 1024 * 1024)); // 1MB chunk
+              const buffer = Buffer.alloc(Math.min(stats.size, 64 * 1024)); // 64KB chunk
               await fd.read(buffer, 0, buffer.length, 0);
               await fd.close();
-              const fileHash = crypto.createHash('md5').update(buffer).digest('hex') + stats.size;
+              const fileHash = crypto.createHash('md5').update(buffer).digest('hex') + stats.size.toString();
 
               if (fileHashes.has(fileHash)) {
                 isDuplicate = true;

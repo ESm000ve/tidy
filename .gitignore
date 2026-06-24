@@ -23,10 +23,15 @@ dist-ssr
 *.sln
 *.sw?
 
-# Build outputs
-build
+# Build outputs (compiled artifacts, not the build/ source assets)
 dist
 dist-electron
+
+# Reference material / scratch (not part of the app)
+HIG/
+Skills/
+build_output*.txt
+test-browser.mjs
 
 # Env
 .env

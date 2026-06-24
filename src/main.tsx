@@ -4,9 +4,12 @@ import App from "./app/App.tsx";
 import "./styles/index.css";
 
 import { ThemeProvider } from "next-themes";
+import { AccessibilityProvider } from "./app/components/AccessibilityProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-    <App />
+    <AccessibilityProvider>
+      <App />
+    </AccessibilityProvider>
   </ThemeProvider>
 );

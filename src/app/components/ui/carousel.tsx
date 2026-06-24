@@ -4,7 +4,8 @@ import * as React from "react";
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { SFIcon } from '@bradleyhodges/sfsymbols-react';
+import { sfArrowLeft, sfArrowRight } from '@bradleyhodges/sfsymbols';
 
 import { cn } from "./utils";
 import { Button } from "./button";
@@ -195,7 +196,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft />
+      <SFIcon icon={sfArrowLeft} className="size-4" />
       <span className="sr-only">Previous slide</span>
     </Button>
   );
@@ -225,7 +226,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight />
+      <SFIcon icon={sfArrowRight} className="size-4" />
       <span className="sr-only">Next slide</span>
     </Button>
   );

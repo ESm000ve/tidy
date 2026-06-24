@@ -33,6 +33,9 @@ export interface ElectronAPI {
     openFolder: (folderPath: string) => Promise<{ success: boolean; error?: string }>;
     undoOrganize: (operations: any[]) => Promise<{ success: boolean; reverted?: number; errors?: number }>;
     saveSchedule: (config: any) => Promise<{ success: boolean; message?: string; error?: string }>;
+    getAccentColor: () => Promise<string | null>;
+    onMenuAction: (callback: (action: string) => void) => () => void;
+    onFullScreenChange: (callback: (isFull: boolean) => void) => () => void;
 }
 
 declare global {

@@ -1,4 +1,10 @@
-import { Check, Copy } from "lucide-react";
+import { SFIcon } from '@bradleyhodges/sfsymbols-react';
+import { sfCheckmark, sfDocumentOnDocument } from '@bradleyhodges/sfsymbols';
+
+const makeIcon = (iconObj: any) => (props: any) => <SFIcon icon={iconObj} className={props.className} aria-hidden={props["aria-hidden"]} aria-label={props["aria-label"]} />;
+
+const Check = makeIcon(sfCheckmark);
+const Copy = makeIcon(sfDocumentOnDocument);
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
@@ -32,7 +38,7 @@ export function ScriptPreview({ script }: ScriptPreviewProps) {
   };
 
   return (
-    <div className="bg-[#0d0d0d]/90 backdrop-blur-2xl rounded-xl overflow-hidden border-[0.5px] border-white/[0.08] shadow-2xl flex flex-col h-full">
+    <div className="bg-popover/90 backdrop-blur-2xl rounded-xl overflow-hidden border-[0.5px] border-black/10 dark:border-white/10 shadow-2xl flex flex-col h-full" style={{ fontFamily: "var(--font-sf)" }}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.03]">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -45,8 +51,8 @@ export function ScriptPreview({ script }: ScriptPreviewProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopy}
-            className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
-            title="Copy to clipboard"
+            className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mac-focus-ring)]"
+            aria-label={copied ? "Script copied" : "Copy script to clipboard"}
           >
             {copied ? (
               <Check className="w-4 h-4 text-green-500" />
@@ -56,17 +62,18 @@ export function ScriptPreview({ script }: ScriptPreviewProps) {
           </button>
           <button
             onClick={handleDownload}
-            className="bg-white text-black px-3 py-1.5 rounded-md text-xs font-medium hover:bg-neutral-200 transition-colors"
+            aria-label="Download organizer.py script"
+            className="bg-white text-black px-3 py-1.5 rounded-md text-xs font-medium hover:bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mac-focus-ring)]"
           >
             Download .py
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto p-4 custom-scrollbar bg-[#0a0a0a]">
+      <div className="flex-1 overflow-auto p-4 custom-scrollbar bg-black/5 dark:bg-black/40">
         <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
           {script.split("\n").map((line, i) => (
             <div key={i} className="table-row">
-              <span className="table-cell select-none text-neutral-700 w-8 text-right pr-4 text-[10px]">
+              <span className="table-cell select-none text-neutral-700 w-8 text-right pr-4 text-[11px]">
                 {i + 1}
               </span>
               <span className="table-cell">
