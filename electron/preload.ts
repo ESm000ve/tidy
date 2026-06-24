@@ -33,6 +33,8 @@ try {
     undoOrganize: (operations: any[]) => ipcRenderer.invoke('organize:undo', operations),
     saveSchedule: (config: any) => ipcRenderer.invoke('schedule:save', config),
     getAccentColor: () => ipcRenderer.invoke('system:getAccentColor'),
+    getApiKey: () => ipcRenderer.invoke('settings:getApiKey'),
+    setApiKey: (key: string) => ipcRenderer.invoke('settings:setApiKey', key),
     onMenuAction: (callback: (action: string) => void) => {
       const listener = (_event: any, action: string) => callback(action);
       ipcRenderer.on('menu:action', listener);

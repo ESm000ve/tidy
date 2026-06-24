@@ -83,6 +83,84 @@ function ProfileCard({
     );
 }
 
+function ApiKeySection({ open }: { open: boolean }) {
+    const [apiKey, setApiKey] = useState("");
+    const [reveal, setReveal] = useState(false);
+    const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+    const available = typeof window !== "undefined" && !!window.electron?.getApiKey;
+
+    // Load the saved key each time the panel opens.
+    useEffect(() => {
+        if (!open || !available) return;
+        window.electron.getApiKey().then((key) => setApiKey(key || "")).catch(() => {});
+        setStatus("idle");
+    }, [open, available]);
+
+    if (!available) return null;
+
+    const handleSave = async () => {
+        setStatus("saving");
+        try {
+            await window.electron.setApiKey(apiKey.trim());
+            setStatus("saved");
+            setTimeout(() => setStatus("idle"), 1800);
+        } catch {
+            setStatus("idle");
+        }
+    };
+
+    return (
+        <div className="pt-3 pb-1">
+            <p className="text-[11px] font-semibold text-foreground/40 dark:text-white/35 mb-3 pl-0.5">
+                AI Features
+            </p>
+            <div className="px-3.5 py-3 rounded-xl bg-black/5 dark:bg-white/[0.05] border-[0.5px] border-black/10 dark:border-white/10 space-y-2.5">
+                <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-medium text-foreground/90 dark:text-white/90">Gemini API Key</span>
+                    <button
+                        type="button"
+                        onClick={() => setReveal((r) => !r)}
+                        className="text-[11px] text-[var(--system-blue)] hover:underline focus:outline-none"
+                    >
+                        {reveal ? "Hide" : "Show"}
+                    </button>
+                </div>
+                <div className="flex items-center gap-2">
+                    <input
+                        type={reveal ? "text" : "password"}
+                        value={apiKey}
+                        onChange={(e) => { setApiKey(e.target.value); setStatus("idle"); }}
+                        placeholder="Paste your key…"
+                        spellCheck={false}
+                        autoComplete="off"
+                        className="flex-1 min-w-0 px-2.5 py-1.5 text-[12px] rounded-lg bg-black/5 dark:bg-white/[0.06] border-[0.5px] border-black/10 dark:border-white/10 text-foreground/90 dark:text-white/90 placeholder:text-foreground/35 dark:placeholder:text-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mac-focus-ring)]"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={status === "saving"}
+                        className="shrink-0 px-3 py-1.5 text-[12px] font-medium rounded-lg bg-[var(--system-blue)] text-white hover:opacity-90 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--mac-focus-ring)] transition-opacity"
+                    >
+                        {status === "saved" ? "Saved" : "Save"}
+                    </button>
+                </div>
+                <p className="text-[11px] text-foreground/45 dark:text-white/35 leading-relaxed">
+                    Natural-language rules and Smart Rename use Google Gemini. Your key is stored
+                    locally on this Mac and never leaves it. Get a free key at{" "}
+                    <a
+                        href="https://aistudio.google.com/apikey"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[var(--system-blue)] hover:underline"
+                    >
+                        aistudio.google.com/apikey
+                    </a>.
+                </p>
+            </div>
+        </div>
+    );
+}
+
 export function AccessibilityPanel({ isCompact = false }: { isCompact?: boolean }) {
     const { hasProfile, toggleProfile, resetAll, profiles } = useAccessibility();
     const [open, setOpen] = useState(false);
@@ -189,6 +267,9 @@ export function AccessibilityPanel({ isCompact = false }: { isCompact?: boolean 
                                 <ThemeToggle />
                             </div>
                         </div>
+
+                        {/* ── AI Features ─────────────────────────────────── */}
+                        <ApiKeySection open={open} />
 
                         {/* ── Accessibility ───────────────────────────────── */}
                         <p className="text-[11px] font-semibold text-foreground/40 dark:text-white/35 pt-2 pb-1 pl-0.5">

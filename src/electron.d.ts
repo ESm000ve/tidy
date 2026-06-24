@@ -34,6 +34,8 @@ export interface ElectronAPI {
     undoOrganize: (operations: any[]) => Promise<{ success: boolean; reverted?: number; errors?: number }>;
     saveSchedule: (config: any) => Promise<{ success: boolean; message?: string; error?: string }>;
     getAccentColor: () => Promise<string | null>;
+    getApiKey: () => Promise<string>;
+    setApiKey: (key: string) => Promise<{ success: boolean }>;
     onMenuAction: (callback: (action: string) => void) => () => void;
     onFullScreenChange: (callback: (isFull: boolean) => void) => () => void;
 }

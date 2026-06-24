@@ -25,6 +25,14 @@ Tidy is a modern, beautifully designed file-organizing app for macOS, packed wit
 - **Node.js 18+** and npm
 - *(Optional)* A free [Google Gemini API key](https://aistudio.google.com/apikey) to enable the AI features
 
+### AI features & your API key
+
+The natural-language rule parser and Smart Rename use Google's Gemini API. **Each user supplies their own key** — nothing is bundled with the app.
+
+- **In the app:** open **Preferences (⌘,)** → **AI Features** and paste your key. It's stored locally on your Mac and never leaves it.
+- **Without a key:** the app runs normally; AI features fall back to a local heuristic.
+- **For development:** you can instead set `GEMINI_API_KEY` in a `.env` file (see below).
+
 ## Getting Started
 
 ### 1. Clone and install
@@ -35,9 +43,9 @@ cd tidy
 npm install
 ```
 
-### 2. Configure your API key (optional)
+### 2. Configure your API key (optional, dev only)
 
-The natural-language rule parser and Smart Rename use the Gemini API. Without a key the app still runs — those features fall back to a local heuristic.
+For local development you can put a Gemini key in a `.env` file. End users of the packaged app don't need this — they set their key in Preferences (⌘,).
 
 ```bash
 cp .env.example .env

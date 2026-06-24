@@ -64,7 +64,42 @@ function createWindow() {
 let smartRenameCache = new Map<string, { suggested: string, reason: string, confidence: string }>();
 let cacheFilePath = '';
 
+// -- User Settings (persisted in userData) --
+// The Gemini API key is supplied by each user via Preferences (⌘,) and stored
+// locally on their machine — it is never bundled with the app.
+interface UserSettings { geminiApiKey?: string; }
+let userSettings: UserSettings = {};
+let settingsFilePath = '';
+
+function loadUserSettings() {
+  try {
+    if (settingsFilePath && fs.existsSync(settingsFilePath)) {
+      userSettings = JSON.parse(fs.readFileSync(settingsFilePath, 'utf-8')) || {};
+    }
+  } catch (e) {
+    console.warn('Failed to load user settings', e);
+    userSettings = {};
+  }
+}
+
+function saveUserSettings() {
+  try {
+    fs.writeFileSync(settingsFilePath, JSON.stringify(userSettings, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('Failed to save user settings', e);
+  }
+}
+
+// Resolve the Gemini API key: the key the user saved in Preferences takes
+// precedence, falling back to a GEMINI_API_KEY env var for local development.
+function getGeminiApiKey(): string | undefined {
+  const key = (userSettings.geminiApiKey || '').trim();
+  return key || process.env.GEMINI_API_KEY || undefined;
+}
+
 app.whenReady().then(() => {
+  settingsFilePath = path.join(app.getPath('userData'), 'settings.json');
+  loadUserSettings();
   cacheFilePath = path.join(app.getPath('userData'), '.file-organizer-cache.json');
   try {
     if (fs.existsSync(cacheFilePath)) {
@@ -349,10 +384,10 @@ function saveCacheToDisk() {
 
 // -- AI Smart Rename Helper --
 async function generateSmartRenames(files: { id: string; name: string; path: string; size: number }[]): Promise<Record<string, any>> {
-  // Requires a GEMINI_API_KEY environment variable
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Requires a Gemini API key (set in Preferences, or a GEMINI_API_KEY env var)
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
-    console.warn("GEMINI_API_KEY not set. Using local heuristic fallback for Smart Rename.");
+    console.warn("No Gemini API key set. Using local heuristic fallback for Smart Rename.");
     const fallbackResults: Record<string, any> = {};
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
@@ -986,12 +1021,23 @@ ipcMain.handle('organize:undo', async (event, operations: any[]) => {
   return { success: true, reverted: revertedCount, errors: errorCount };
 });
 
+// -- Settings: Gemini API key (stored locally per user) --
+ipcMain.handle('settings:getApiKey', () => {
+  return userSettings.geminiApiKey || '';
+});
+
+ipcMain.handle('settings:setApiKey', (_event, key: string) => {
+  userSettings.geminiApiKey = (key || '').trim();
+  saveUserSettings();
+  return { success: true };
+});
+
 // -- AI Natural Language Rule Parser --
 ipcMain.handle('ai:parseRule', async (event, rule: string, currentConfig: any) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = getGeminiApiKey();
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set. Please add it to your .env file.");
+      throw new Error("No Gemini API key set. Add your key in Preferences (⌘,) to use AI features.");
     }
 
     // Note: Assuming API key works with @google/genai syntax used elsewhere in this codebase

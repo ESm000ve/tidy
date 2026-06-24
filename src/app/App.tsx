@@ -295,7 +295,7 @@ export default function App() {
       }
     } catch (e) {
       console.error(e);
-      setNlFeedback({ type: "error", message: "Couldn't reach AI. Check that GEMINI_API_KEY is set." });
+      setNlFeedback({ type: "error", message: "Couldn't reach AI. Add your Gemini API key in Preferences (⌘,)." });
     } finally {
       setNlSubmitting(false);
     }
@@ -1511,7 +1511,7 @@ export default function App() {
             }
           } catch (e) {
             console.error(e);
-            showAlert("Error communicating with AI parser. Make sure GEMINI_API_KEY is set in your .env");
+            showAlert("Error communicating with AI parser. Add your Gemini API key in Preferences (⌘,).");
           }
         }}
       />
