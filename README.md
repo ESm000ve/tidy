@@ -2,6 +2,8 @@
 
 Tidy is a modern, beautifully designed file-organizing app for macOS, packed with powerful features to help you keep your directories clean. Built around standard macOS interface principles but with a dynamic, contemporary UI, Tidy brings elegance and simplicity to what's usually a tedious task.
 
+![Tidy app interface](docs/screenshot.png)
+
 ## Features
 
 - **Dynamic Theme** — Light, Dark, and System appearance.
