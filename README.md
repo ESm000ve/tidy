@@ -38,7 +38,7 @@ The natural-language rule parser and Smart Rename use Google's Gemini API. **Eac
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/ESm00ve/tidy.git
+git clone https://github.com/ESm000ve/tidy.git
 cd tidy
 npm install
 ```
