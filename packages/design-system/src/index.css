@@ -1,0 +1,24 @@
+@import "tailwindcss" source(none);
+@source "./**/*.{js,ts,jsx,tsx}";
+
+@import "../../tokens/src/theme.css";
+
+@layer base {
+  * {
+    @apply border-vibrancy-border outline-focus-ring/50;
+  }
+}
+
+@layer utilities {
+  .mac-glass {
+    @apply bg-white/70 dark:bg-[#1e1e1e]/70 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm;
+  }
+  
+  .mac-panel {
+    @apply bg-mac-window-background border border-vibrancy-border shadow-md rounded-lg;
+  }
+  
+  .mac-focus {
+    @apply focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-focus-ring/50 focus-visible:border-focus-ring;
+  }
+}

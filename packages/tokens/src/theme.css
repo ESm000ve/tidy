@@ -1,0 +1,137 @@
+/* --- Static Tokens (Identical for All Themes) --- */
+:root {
+  /* --- Unified Border Radii (macOS HIG Scaled) --- */
+  --radius-xs: 4px;   /* Small badges / sub-elements */
+  --radius-sm: 6px;   /* Buttons, compact switches */
+  --radius-md: 8px;   /* Form inputs, select triggers, cards */
+  --radius-lg: 12px;  /* Outer panels, layout tiles */
+  --radius-xl: 20px;  /* Modals, alerts, major dialogs */
+
+  /* --- Layout Spacing Scale (4px base) --- */
+  --space-1: 4px;     /* gap-1 */
+  --space-2: 8px;     /* gap-2 */
+  --space-3: 12px;    /* gap-3 */
+  --space-4: 16px;    /* gap-4 */
+  --space-5: 20px;    /* gap-5 */
+  --space-6: 24px;    /* gap-6 */
+  --space-8: 32px;    /* gap-8 */
+
+  /* --- Typography Scale (macOS System Sizes) --- */
+  --text-xs: 11px;    /* Caption, auxiliary labels */
+  --text-sm: 13px;    /* Core body text, buttons, form labels */
+  --text-md: 15px;    /* List headers, primary controls */
+  --text-lg: 17px;    /* Panel titles, subheadings */
+  --text-xl: 22px;    /* Major header level */
+  --text-2xl: 26px;   /* H1 titles */
+}
+
+/* --- Theme-Dependent Tokens (Configured per Theme) --- */
+
+/* --- LIGHT MODE --- */
+:root {
+  /* macOS Light Accent Palette */
+  --color-accent-blue: #007AFF;
+  --color-accent-green: #34C759;
+  --color-accent-red: #FF3B30;
+  --color-accent-yellow: #FFCC00;
+  --color-accent-orange: #FF9500;
+  --color-accent-purple: #AF52DE;
+
+  /* macOS Semantic Labels */
+  --color-mac-label: #000000;
+  --color-mac-secondary-label: rgba(60, 60, 67, 0.6);
+  --color-mac-window-background: #ececec;
+
+  /* Material Vibrancy Base Layers */
+  --color-vibrancy-base: rgba(0, 0, 0, 0.05);
+  --color-vibrancy-hover: rgba(0, 0, 0, 0.08);
+  --color-vibrancy-active: rgba(0, 0, 0, 0.12);
+  --color-vibrancy-border: rgba(0, 0, 0, 0.10);
+  --color-vibrancy-overlay: rgba(0, 0, 0, 0.45);
+
+  /* Primary Interactive Mappings */
+  --color-focus-ring: var(--color-accent-blue);
+  --color-toggle-off: #e5e5ea;
+}
+
+/* --- DARK MODE --- */
+.dark {
+  /* macOS Dark Accent Palette */
+  --color-accent-blue: #0A84FF;
+  --color-accent-green: #32D74B;
+  --color-accent-red: #FF453A;
+  --color-accent-yellow: #FFD60A;
+  --color-accent-orange: #FF9F0A;
+  --color-accent-purple: #BF5AF2;
+
+  /* macOS Semantic Labels */
+  --color-mac-label: #FFFFFF;
+  --color-mac-secondary-label: rgba(255, 255, 255, 0.5);
+  --color-mac-window-background: #1e1e1e;
+
+  /* Material Vibrancy Base Layers */
+  --color-vibrancy-base: rgba(255, 255, 255, 0.08);
+  --color-vibrancy-hover: rgba(255, 255, 255, 0.12);
+  --color-vibrancy-active: rgba(255, 255, 255, 0.16);
+  --color-vibrancy-border: rgba(255, 255, 255, 0.15);
+  --color-vibrancy-overlay: rgba(0, 0, 0, 0.60);
+
+  /* Primary Interactive Mappings */
+  --color-focus-ring: var(--color-accent-blue);
+  --color-toggle-off: #3a3a3c;
+}
+
+/* --- Tailwind CSS v4 Theme Configuration --- */
+@theme {
+  /* Radii mapping */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Colors mapping */
+  --color-accent-blue: var(--color-accent-blue);
+  --color-accent-green: var(--color-accent-green);
+  --color-accent-red: var(--color-accent-red);
+  --color-accent-yellow: var(--color-accent-yellow);
+  --color-accent-orange: var(--color-accent-orange);
+  --color-accent-purple: var(--color-accent-purple);
+
+  --color-mac-label: var(--color-mac-label);
+  --color-mac-secondary-label: var(--color-mac-secondary-label);
+  --color-mac-window-background: var(--color-mac-window-background);
+
+  --color-vibrancy-base: var(--color-vibrancy-base);
+  --color-vibrancy-hover: var(--color-vibrancy-hover);
+  --color-vibrancy-active: var(--color-vibrancy-active);
+  --color-vibrancy-border: var(--color-vibrancy-border);
+  --color-vibrancy-overlay: var(--color-vibrancy-overlay);
+
+  --color-focus-ring: var(--color-focus-ring);
+  --color-toggle-off: var(--color-toggle-off);
+
+  /* Typography size mapping */
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-md: var(--text-md);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+}
+
+/* --- High-Contrast Overrides (OS prefers-contrast: more) --- */
+@media (prefers-contrast: more) {
+  :root {
+    --color-vibrancy-base: rgba(0, 0, 0, 0.08);
+    --color-vibrancy-hover: rgba(0, 0, 0, 0.15);
+    --color-vibrancy-active: rgba(0, 0, 0, 0.22);
+    --color-vibrancy-border: rgba(0, 0, 0, 0.80);
+  }
+  .dark {
+    --color-vibrancy-base: rgba(255, 255, 255, 0.12);
+    --color-vibrancy-hover: rgba(255, 255, 255, 0.20);
+    --color-vibrancy-active: rgba(255, 255, 255, 0.28);
+    --color-vibrancy-border: rgba(255, 255, 255, 0.80);
+  }
+}
